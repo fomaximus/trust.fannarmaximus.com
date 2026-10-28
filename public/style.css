@@ -1,0 +1,211 @@
+/* trust.fannarmaximus.com — one column, two tones, one accent. */
+
+@font-face {
+	font-family: "Cormorant Garamond";
+	src: url("/fonts/cormorant-garamond.woff2") format("woff2");
+	font-weight: 300 700;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Inter";
+	src: url("/fonts/inter.woff2") format("woff2");
+	font-weight: 100 900;
+	font-display: swap;
+}
+
+:root {
+	--bg: #f7f6f3;
+	--fg: #111111;
+	--muted: rgba(17, 17, 17, 0.55);
+	--rule: rgba(17, 17, 17, 0.12);
+	--accent: #4fc3f7;
+	--serif: "Cormorant Garamond", Georgia, serif;
+	--sans: "Inter", system-ui, sans-serif;
+	color-scheme: light;
+}
+:root[data-theme="dark"] {
+	--bg: #111111;
+	--fg: #f7f6f3;
+	--muted: rgba(247, 246, 243, 0.55);
+	--rule: rgba(247, 246, 243, 0.14);
+	color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--bg: #111111;
+		--fg: #f7f6f3;
+		--muted: rgba(247, 246, 243, 0.55);
+		--rule: rgba(247, 246, 243, 0.14);
+		color-scheme: dark;
+	}
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--sans);
+	font-size: 1rem;
+	line-height: 1.6;
+	font-weight: 400;
+}
+
+.wrap {
+	max-width: 40rem;
+	margin: 0 auto;
+	padding: 4rem 1rem 6rem;
+}
+@media (min-width: 40rem) { .wrap { padding: 6rem 1.5rem 8rem; } }
+
+h1, h2, h3, .serif {
+	font-family: var(--serif);
+	font-weight: 400;
+	line-height: 1.1;
+	margin: 0;
+}
+h1 { font-size: clamp(2.25rem, 7vw, 3.5rem); }
+h2 { font-size: clamp(1.75rem, 5vw, 2.5rem); margin-top: 4rem; }
+h3 { font-size: 1.5rem; }
+p { margin: 0 0 1rem; }
+p.muted, .muted { color: var(--muted); }
+p.small, .small { font-size: 0.875rem; }
+a {
+	color: inherit;
+	text-decoration: underline;
+	text-decoration-color: var(--accent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.2em;
+}
+a:hover { text-decoration-thickness: 3px; }
+em { font-style: italic; }
+
+.formula {
+	font-family: var(--serif);
+	font-weight: 300;
+	font-size: clamp(2.5rem, 10vw, 5rem);
+	line-height: 1;
+	letter-spacing: 0.01em;
+	margin: 0 0 0.5rem;
+	white-space: nowrap;
+}
+.formula .frac { color: var(--accent); }
+
+.factors { margin: 3rem 0 2rem; padding: 0; list-style: none; }
+.factor { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+.factor:last-child { border-bottom: 1px solid var(--rule); }
+.factor .name { font-family: var(--serif); font-size: 1.75rem; line-height: 1.2; display: block; }
+.factor .name small { color: var(--muted); font-size: 0.6em; margin-left: 0.35em; }
+.factor .meaning { margin: 0.25rem 0 0; color: var(--muted); }
+
+hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
+
+/* buttons: text first, accent underline */
+.button {
+	display: inline-block;
+	font: inherit;
+	font-weight: 500;
+	background: none;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	color: inherit;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-color: var(--accent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.25em;
+	font-size: 1.125rem;
+}
+.button:hover { text-decoration-thickness: 3px; }
+.button:disabled { color: var(--muted); cursor: default; }
+.button.big { font-family: var(--serif); font-weight: 400; font-size: 1.75rem; }
+
+.mode-toggle {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	font: inherit;
+	font-size: 0.8125rem;
+	background: none;
+	border: 0;
+	padding: 0.25rem 0.5rem;
+	color: var(--muted);
+	cursor: pointer;
+	letter-spacing: 0.04em;
+}
+.mode-toggle:hover { color: var(--fg); }
+
+/* forms */
+label.field { display: block; margin: 0 0 1.5rem; }
+label.field span { display: block; font-size: 0.875rem; color: var(--muted); margin-bottom: 0.25rem; }
+input[type="text"] {
+	width: 100%;
+	font: inherit;
+	font-size: 1.25rem;
+	color: var(--fg);
+	background: transparent;
+	border: 0;
+	border-bottom: 1px solid var(--rule);
+	border-radius: 0;
+	padding: 0.5rem 0;
+	outline: none;
+}
+input[type="text"]:focus { border-bottom-color: var(--accent); }
+
+.block { margin: 3rem 0 0; }
+.block h3 { margin-bottom: 0.25rem; }
+.block .lead { color: var(--muted); margin-bottom: 1.5rem; }
+
+fieldset.factor-row { border: 0; padding: 1rem 0; margin: 0; border-top: 1px solid var(--rule); }
+fieldset.factor-row:last-child { border-bottom: 1px solid var(--rule); }
+.factor-row legend { padding: 0; margin-bottom: 0.5rem; }
+.factor-row .name { font-family: var(--serif); font-size: 1.5rem; line-height: 1.2; }
+.factor-row .meaning { display: block; font-size: 0.875rem; color: var(--muted); }
+.factor-row.unanswered legend .name::after { content: " ·"; color: var(--accent); }
+
+.scale { display: flex; justify-content: space-between; gap: 0.3rem; }
+.scale label { flex: 1 1 0; max-width: 2.25rem; }
+.scale input {
+	position: absolute;
+	width: 1px; height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+.scale span {
+	display: grid;
+	place-items: center;
+	aspect-ratio: 1;
+	width: 100%;
+	border-radius: 50%;
+	border: 1px solid var(--rule);
+	font-size: 0.875rem;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	user-select: none;
+	transition: background 0.1s, border-color 0.1s;
+}
+.scale label:hover span { border-color: var(--fg); }
+.scale input:checked + span { background: var(--accent); border-color: var(--accent); color: #111111; font-weight: 600; }
+.scale input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.error { color: var(--fg); border-left: 2px solid var(--accent); padding-left: 0.75rem; }
+.error[hidden] { display: none; }
+
+/* share link */
+.share { display: flex; gap: 0.75rem; align-items: baseline; margin: 1rem 0 2rem; }
+.share input { flex: 1 1 auto; min-width: 0; font-size: 1rem; }
+
+/* reveal */
+.reveal { display: grid; gap: 3rem; margin-top: 2rem; }
+@media (min-width: 40rem) { .reveal { grid-template-columns: 1fr 1fr; } }
+.reveal h3 { margin-bottom: 1rem; }
+.reveal table { border-collapse: collapse; width: 100%; }
+.reveal td { padding: 0.5rem 0; border-top: 1px solid var(--rule); vertical-align: baseline; }
+.reveal td.k { font-family: var(--serif); font-size: 1.25rem; width: 60%; }
+.reveal td.v { font-size: 1.5rem; font-variant-numeric: tabular-nums; width: 20%; text-align: right; font-family: var(--serif); }
+.reveal td.p { color: var(--muted); font-size: 0.8125rem; text-align: right; white-space: nowrap; }
+.reveal .total { margin-top: 1.5rem; }
+.reveal .total .t { font-family: var(--serif); font-weight: 300; font-size: 4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.reveal .total .pt { color: var(--muted); font-size: 0.875rem; }
