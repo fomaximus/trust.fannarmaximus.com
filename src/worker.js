@@ -2,6 +2,7 @@
 // rewrites /s/<token> to the session page so one HTML file handles every state.
 
 import { handleApi } from "./api.js";
+import { deleteExpired } from "./store.js";
 
 const SESSION_PATH = /^\/s\/[A-Za-z0-9_-]+$/;
 
@@ -15,5 +16,10 @@ export default {
 			return env.ASSETS.fetch(new Request(new URL("/session", request.url), request));
 		}
 		return env.ASSETS.fetch(request);
+	},
+
+	// Nightly: drop sessions past their 90-day expiry.
+	async scheduled(controller, env) {
+		await deleteExpired(env.DB, Date.now());
 	},
 };
