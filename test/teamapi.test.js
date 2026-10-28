@@ -63,8 +63,8 @@ describe("GET /api/teams/:token", () => {
 		b = await view(t.tokens.Bjarni);
 		expect(b.state).toBe("revealed");
 		expect(b.links).toBeUndefined();
-		expect(JSON.stringify(b)).not.toMatch(/"given"|"token"/);
-		expect(b.reveal.you).toEqual({ c: 9, r: 9, i: 9, s: 1, t: 27 });
+		expect(JSON.stringify(b)).not.toMatch(/"given"|"token"|"you":\{"c"/);
+		expect(b.reveal.you).toBeUndefined();
 	});
 	it("who-answered list updates as people score", async () => {
 		const t = await create();
@@ -92,13 +92,24 @@ describe("GET /api/teams/:token", () => {
 			expect(b.reveal.min).toEqual({ c: 4, r: 6, i: 5, s: 1, t: 2.5 });
 			expect(b.reveal.max).toEqual({ c: 9, r: 9, i: 9, s: 8, t: 27 });
 			expect(b.reveal.avg).toEqual({ c: 7, r: 7.3, i: 6.7, s: 3.7, t: 12.5 });
-			expect(b.reveal.you.c).toBe(SCORES[name].given.c);
+			expect(b.reveal.you).toBeUndefined();
 		}
 	});
 	it("404 for unknown token", async () => expect((await get("/api/teams/zzzzzzzzzzzzzzzzzzzzzz")).status).toBe(404));
 });
 
 describe("POST /api/teams/:token/score", () => {
+	it("returns your own numbers once, with T, and never again via GET", async () => {
+		const t = await create();
+		const res = await score(t.tokens.Bjarni, SCORES.Bjarni);
+		expect(await res.json()).toEqual({ state: "waiting", you: { c: 9, r: 9, i: 9, s: 1, t: 27 } });
+		await score(t.tokens.Anna, SCORES.Anna);
+		await score(t.tokens.Clara, SCORES.Clara);
+		// the creator holds Bjarni's link; opening it must not show Bjarni's numbers
+		const asBjarni = await view(t.tokens.Bjarni);
+		expect(asBjarni.state).toBe("revealed");
+		expect(JSON.stringify(asBjarni)).not.toMatch(/"given"|"you":\{"c"/);
+	});
 	it("409 on second score, 400 on bad scores", async () => {
 		const t = await create();
 		expect((await score(t.tokens.Anna, g(0, 1, 1, 1))).status).toBe(400);

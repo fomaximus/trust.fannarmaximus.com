@@ -73,10 +73,8 @@ function present({ team, you, members }, origin) {
 	if (you.isCreator && state !== "revealed") {
 		body.links = members.filter((m) => m.token).map((m) => ({ id: m.id, nickname: m.nickname, url: `${origin}/t/${m.token}` }));
 	}
-	if (state === "revealed") {
-		const g = you.scores ? you.scores.given : null;
-		body.reveal = { ...aggregate(members), you: g ? { ...g, t: computeT(g) } : null };
-	}
+	// Individual numbers never leave on a GET: the creator holds every member's link.
+	if (state === "revealed") body.reveal = aggregate(members);
 	return body;
 }
 
@@ -93,7 +91,8 @@ async function score(request, token, env, now) {
 	const scores = validateTeamScores(await readBody(request));
 	if (!(await submitTeamScore(env.DB, found.you.id, scores, now))) return json({ error: "already_scored" }, 409);
 	const after = await load(token, env, now);
-	return json({ state: teamState(after.team, after.you) });
+	// Your own numbers come back exactly once, here; the page keeps them on this device.
+	return json({ state: teamState(after.team, after.you), you: { ...scores.given, t: computeT(scores.given) } });
 }
 
 async function remove(request, token, env, now) {

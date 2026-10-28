@@ -1,6 +1,7 @@
 // D1 persistence for teams and members. Every function takes the DB binding first.
 
 import { SESSION_TTL_MS, computeT } from "./session.js";
+import { TEAM_MIN } from "./team.js";
 import { randomToken } from "./store.js";
 
 function dayOf(ms) {
@@ -69,8 +70,15 @@ export async function markRevealed(db, teamId, now) {
 	await db.prepare(`UPDATE teams SET revealed_at = ? WHERE id = ? AND revealed_at IS NULL`).bind(now, teamId).run();
 }
 
+// The size floor is enforced inside the statement so two concurrent removals cannot both pass.
 export async function removeMember(db, memberId) {
-	const result = await db.prepare(`DELETE FROM members WHERE id = ? AND scores IS NULL`).bind(memberId).run();
+	const result = await db
+		.prepare(
+			`DELETE FROM members WHERE id = ? AND scores IS NULL
+			   AND (SELECT COUNT(*) FROM members m2 WHERE m2.team_id = members.team_id) > ?`,
+		)
+		.bind(memberId, TEAM_MIN)
+		.run();
 	return result.meta.changes === 1;
 }
 

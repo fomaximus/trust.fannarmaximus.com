@@ -63,12 +63,19 @@ describe("team store", () => {
 	});
 
 	it("removeMember deletes only unscored members", async () => {
-		const t = await make();
+		const t = await make(["Bjarni", "Clara", "Dora"]);
 		const { members } = await findTeamByToken(env.DB, t.creatorToken, now);
 		await submitTeamScore(env.DB, members[2].id, scores(5), now);
 		expect(await removeMember(env.DB, members[2].id)).toBe(false);
 		expect(await removeMember(env.DB, members[1].id)).toBe(true);
-		expect((await findTeamByToken(env.DB, t.creatorToken, now)).members.map((m) => m.nickname)).toEqual(["Anna", "Clara"]);
+		expect((await findTeamByToken(env.DB, t.creatorToken, now)).members.map((m) => m.nickname)).toEqual(["Anna", "Clara", "Dora"]);
+	});
+
+	it("removeMember refuses to drop a team below three, even when unscored", async () => {
+		const t = await make();
+		const { members } = await findTeamByToken(env.DB, t.creatorToken, now);
+		expect(await removeMember(env.DB, members[1].id)).toBe(false);
+		expect((await findTeamByToken(env.DB, t.creatorToken, now)).members.length).toBe(3);
 	});
 
 	it("forgetMemberName blanks nickname and token but keeps scores", async () => {
