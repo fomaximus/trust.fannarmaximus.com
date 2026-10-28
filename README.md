@@ -1,5 +1,7 @@
 # trust.fannarmaximus.com
 
+Live at **https://trust.fannarmaximus.com**. Made by [Fannar Maximus](https://www.fannarmaximus.com).
+
 The Trust Equation, T = (C + R + I) / S, explained, plus a two-person sealed mutual-scoring flow. Cloudflare Worker with static assets and a D1 database.
 
 - `npm run dev` — local server on http://localhost:8787 (run `npx wrangler d1 migrations apply trust-sessions --local` once first)

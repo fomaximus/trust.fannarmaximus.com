@@ -94,6 +94,9 @@ a:hover { text-decoration-thickness: 3px; }
 .factor .more { margin: 0.6rem auto 0; font-size: 0.875rem; color: var(--faint); }
 .factor .ask { margin: 0.4rem auto 0; font-size: 0.875rem; font-style: italic; color: var(--muted); }
 
+.site-footer { padding: 0 1rem 3rem; }
+.site-footer p { margin: 0 auto; }
+
 /* hero */
 .formula {
 	font-weight: 200;
