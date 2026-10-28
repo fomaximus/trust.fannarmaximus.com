@@ -143,6 +143,12 @@ a:hover { text-decoration-thickness: 3px; }
 }
 .button:hover { text-decoration-thickness: 3px; }
 .button:disabled { color: var(--muted); cursor: default; }
+.button.small { font-size: 0.875rem; font-weight: 500; color: var(--muted); }
+.button.small:hover { color: var(--fg); }
+.prose { text-align: left; max-width: 34rem; margin: 3rem auto 0; }
+.prose h3 { margin: 2rem 0 0.5rem; }
+.prose p, .prose li { margin: 0 0 0.75rem; color: var(--muted); }
+.prose ul { padding-left: 1.25rem; }
 .button.big {
 	font-size: 1rem;
 	font-weight: 600;

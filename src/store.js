@@ -11,14 +11,17 @@ export async function createSession(db, { creatorName, inviteeName, creatorScore
 	const id = randomToken();
 	const creatorToken = randomToken();
 	const inviteeToken = randomToken();
-	await db
-		.prepare(
-			`INSERT INTO sessions (id, created_at, expires_at, creator_token, invitee_token,
-			   creator_name, invitee_name, creator_scores, creator_ip_hash)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		)
-		.bind(id, now, now + SESSION_TTL_MS, creatorToken, inviteeToken, creatorName, inviteeName, JSON.stringify(creatorScores), creatorIpHash)
-		.run();
+	// The ip hash goes only into the creation log, which deleting a session cannot erase.
+	await db.batch([
+		db
+			.prepare(
+				`INSERT INTO sessions (id, created_at, expires_at, creator_token, invitee_token,
+				   creator_name, invitee_name, creator_scores, creator_ip_hash)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, '')`,
+			)
+			.bind(id, now, now + SESSION_TTL_MS, creatorToken, inviteeToken, creatorName, inviteeName, JSON.stringify(creatorScores)),
+		db.prepare(`INSERT INTO creations (ip_hash, created_at) VALUES (?, ?)`).bind(creatorIpHash, now),
+	]);
 	return { id, creatorToken, inviteeToken };
 }
 
@@ -55,7 +58,7 @@ export async function submitInviteeScores(db, inviteeToken, scores, now, name = 
 
 export async function countRecentCreations(db, creatorIpHash, since) {
 	const row = await db
-		.prepare(`SELECT COUNT(*) AS n FROM sessions WHERE creator_ip_hash = ? AND created_at > ?`)
+		.prepare(`SELECT COUNT(*) AS n FROM creations WHERE ip_hash = ? AND created_at > ?`)
 		.bind(creatorIpHash, since)
 		.first();
 	return row.n;
@@ -108,11 +111,8 @@ export async function anonymiseExpired(db, now) {
 	return { kept, dropped };
 }
 
-// The IP hash only serves the one-hour rate limit; forget it once it is older than the cutoff.
+// The creation log only serves the one-hour rate limit; forget entries older than the cutoff.
 export async function clearOldIpHashes(db, before) {
-	const result = await db
-		.prepare(`UPDATE sessions SET creator_ip_hash = '' WHERE created_at < ? AND creator_ip_hash != ''`)
-		.bind(before)
-		.run();
+	const result = await db.prepare(`DELETE FROM creations WHERE created_at < ?`).bind(before).run();
 	return result.meta.changes;
 }

@@ -37,7 +37,8 @@
 			<button class="button" type="button" id="copy">Copy</button>
 		</div>
 		<hr class="rule">
-		<p class="small faint">This page is yours. Keep the link; it opens the reveal once <span class="n invitee"></span> has scored.</p>
+		<p class="small faint">This page is yours. Keep the link; it opens the reveal once <span class="n invitee"></span> has scored. Share the link above, not this page's address.</p>
+		<p class="mt-25"><button class="button small delete" type="button">Delete names and links</button></p>
 	</section>
 
 	<section id="score" hidden>
@@ -46,7 +47,7 @@
 		<hr class="rule">
 		<p class="small faint"><a href="/">What is the Trust Equation?</a></p>
 		<form class="mt-4" id="score-form" novalidate>
-			<label class="field"><span>Your first name</span><input type="text" id="my-name" maxlength="40" required autocomplete="given-name"></label>
+			<label class="field"><span>Your nickname or first name</span><input type="text" id="my-name" maxlength="40" required autocomplete="given-name"></label>
 			<div id="given"></div>
 			<div id="predicted"></div>
 			<p class="error" id="error" hidden></p>
@@ -62,6 +63,16 @@
 		</div>
 		<hr class="mt-35 rule">
 		<p class="faint">The gaps are the conversation.</p>
+		<p class="mt-25"><button class="button small delete" type="button">Delete names and links</button></p>
+		<p class="small faint">The scores stay, without names, in the <a href="/privacy">statistics</a>.</p>
+	</section>
+
+	<section id="deleted" hidden>
+		<h1>Deleted.</h1>
+		<p class="lead mt-15">The names and both links are gone.</p>
+		<hr class="rule">
+		<p class="small faint">The scores stay, without names, in the statistics.</p>
+		<p class="mt-25"><a class="button big" href="/new">Start a new one</a></p>
 	</section>
 
 	<section id="gone" hidden>
@@ -71,7 +82,7 @@
 
 </main>
 	<footer class="site-footer">
-		<p class="small faint">Made by <a href="https://www.fannarmaximus.com" rel="noopener">Fannar Maximus</a> · <a href="https://github.com/fomaximus/trust.fannarmaximus.com" rel="noopener">Source</a></p>
+		<p class="small faint">Made by <a href="https://www.fannarmaximus.com" rel="noopener">Fannar Maximus</a> · <a href="https://github.com/fomaximus/trust.fannarmaximus.com" rel="noopener">Source</a> · <a href="/privacy">Privacy</a></p>
 	</footer>
 
 <script src="/form.js"></script>

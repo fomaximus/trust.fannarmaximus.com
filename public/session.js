@@ -4,7 +4,7 @@
 	// Tolerate a trailing slash or punctuation a chat app may have glued on.
 	var token = (location.pathname.split("/").filter(Boolean).pop() || "").replace(/[^A-Za-z0-9_-]/g, "");
 	var api = "/api/sessions/" + token;
-	var sections = ["loading", "waiting", "score", "reveal", "gone"];
+	var sections = ["loading", "waiting", "score", "reveal", "gone", "deleted"];
 	var pollTimer = null;
 	var FACTORS = [["c", "Credibility"], ["r", "Reliability"], ["i", "Intimacy"], ["s", "Self-orientation"]];
 
@@ -138,6 +138,27 @@
 		column(document.getElementById("col-creator"), d.creatorName, d.inviteeName, r.creator, r.invitee);
 		column(document.getElementById("col-invitee"), d.inviteeName, d.creatorName, r.invitee, r.creator);
 	}
+
+	// Delete: first tap asks, second tap within 5 s does it. No modal dialogs.
+	document.querySelectorAll("button.delete").forEach(function (btn) {
+		var armed = null;
+		btn.addEventListener("click", async function () {
+			if (!armed) {
+				btn.textContent = "Tap again to delete";
+				armed = setTimeout(function () { armed = null; btn.textContent = "Delete names and links"; }, 5000);
+				return;
+			}
+			clearTimeout(armed);
+			btn.disabled = true;
+			try {
+				var res = await fetch(api, { method: "DELETE" });
+				if (res.ok || res.status === 404) { clearInterval(pollTimer); window.scrollTo(0, 0); show("deleted"); return; }
+			} catch (e) {}
+			btn.disabled = false;
+			btn.textContent = "Couldn't delete. Try again.";
+			armed = null;
+		});
+	});
 
 	load();
 })();

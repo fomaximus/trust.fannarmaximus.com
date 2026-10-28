@@ -104,6 +104,14 @@ describe("DELETE /api/sessions/:token", () => {
 		expect((await get(`/api/sessions/${made.inviteeToken}`)).status).toBe(404);
 	});
 	it("404 for unknown token", async () => expect((await del("zzzzzzzzzzzzzzzzzzzzzz")).status).toBe(404));
+	it("deleting sessions does not reset the rate limit", async () => {
+		for (let n = 0; n < 20; n++) {
+			const res = await post("/api/sessions", good, "7.7.7.7");
+			expect(res.status).toBe(201);
+			expect((await del((await res.json()).creatorToken)).status).toBe(200);
+		}
+		expect((await post("/api/sessions", good, "7.7.7.7")).status).toBe(429);
+	});
 });
 
 describe("hashIp", () => {

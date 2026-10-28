@@ -64,7 +64,7 @@ const statsCount = async () => (await env.DB.prepare("SELECT COUNT(*) AS n FROM 
 describe("anonymisation", () => {
 	// D1 rows persist across tests in this file, so start each case from empty tables.
 	beforeEach(async () => {
-		await env.DB.batch([env.DB.prepare("DELETE FROM sessions"), env.DB.prepare("DELETE FROM stats")]);
+		await env.DB.batch([env.DB.prepare("DELETE FROM sessions"), env.DB.prepare("DELETE FROM stats"), env.DB.prepare("DELETE FROM creations")]);
 	});
 	it("moves a completed session into stats without names or tokens", async () => {
 		const s = await make();
@@ -99,11 +99,21 @@ describe("anonymisation", () => {
 		expect(await findByToken(env.DB, undone.creatorToken, 0)).toBeNull();
 		expect(await findByToken(env.DB, fresh.creatorToken, now)).not.toBeNull();
 	});
-	it("clearOldIpHashes blanks hashes older than the cutoff only", async () => {
+	it("clearOldIpHashes forgets creation records older than the cutoff only", async () => {
 		await make("old-ip", now - 25 * 3_600_000);
 		await make("new-ip", now - 1000);
 		expect(await clearOldIpHashes(env.DB, now - 24 * 3_600_000)).toBe(1);
 		expect(await countRecentCreations(env.DB, "old-ip", 0)).toBe(0);
 		expect(await countRecentCreations(env.DB, "new-ip", 0)).toBe(1);
+	});
+	it("sessions never store the ip hash themselves", async () => {
+		const s = await make("some-ip");
+		const row = await env.DB.prepare("SELECT creator_ip_hash FROM sessions WHERE id = ?").bind(s.id).first();
+		expect(row.creator_ip_hash).toBe("");
+	});
+	it("deleting a session keeps its creation record", async () => {
+		const s = await make("kept-ip");
+		await deleteSession(env.DB, s.id);
+		expect(await countRecentCreations(env.DB, "kept-ip", 0)).toBe(1);
 	});
 });
