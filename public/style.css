@@ -66,8 +66,8 @@ body {
 }
 
 h1, h2, h3 {
-	font-weight: 800;
-	letter-spacing: -0.025em;
+	font-weight: 600;
+	letter-spacing: -0.02em;
 	line-height: 1.05;
 	margin: 0;
 }
@@ -90,11 +90,12 @@ a:hover { text-decoration-thickness: 3px; }
 
 /* hero */
 .formula {
-	font-weight: 800;
+	font-weight: 200;
 	font-size: clamp(2.5rem, 9vw, 4.5rem);
-	letter-spacing: -0.03em;
+	letter-spacing: 0.02em;
 	line-height: 1;
-	margin: 0 0 1rem;
+	margin: 0 0 1.25rem;
+	max-width: none;
 	white-space: nowrap;
 }
 .formula .frac { color: inherit; }
@@ -110,7 +111,7 @@ a:hover { text-decoration-thickness: 3px; }
 .factors { margin: 4rem auto 2rem; padding: 0; list-style: none; max-width: 34rem; }
 .factor { padding: 1.75rem 0; border-top: 1px solid var(--rule); }
 .factor:last-child { border-bottom: 1px solid var(--rule); }
-.factor .name { display: block; font-weight: 700; font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
+.factor .name { display: block; font-weight: 600; font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; }
 .factor .name small { color: var(--faint); font-weight: 500; font-size: 0.7em; margin-left: 0.4em; letter-spacing: 0; }
 .factor .meaning { margin: 0.4rem auto 0; color: var(--muted); }
 
@@ -186,7 +187,7 @@ input[type="text"]:focus { border-bottom-color: var(--accent); }
 fieldset.factor-row { border: 0; padding: 1.25rem 0; margin: 0; min-inline-size: 0; box-shadow: 0 -1px 0 var(--rule); }
 fieldset.factor-row:last-child { box-shadow: 0 -1px 0 var(--rule), 0 1px 0 var(--rule); }
 .factor-row legend { padding: 0; margin: 0 auto 0.75rem; display: block; text-align: center; width: 100%; }
-.factor-row .name { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.01em; }
+.factor-row .name { font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em; }
 .factor-row .meaning { display: block; font-size: 0.8125rem; color: var(--muted); }
 .factor-row.unanswered legend .name::after { content: " ·"; color: var(--accent); }
 
@@ -233,5 +234,5 @@ fieldset.factor-row:last-child { box-shadow: 0 -1px 0 var(--rule), 0 1px 0 var(-
 .reveal td.v { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; padding-left: 1rem; }
 .reveal td.p { color: var(--faint); font-size: 0.75rem; text-align: right; white-space: nowrap; padding-left: 0.75rem; width: 1%; }
 .reveal .total { margin-top: 1.75rem; }
-.reveal .total .t { font-weight: 800; font-size: 4rem; letter-spacing: -0.04em; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.reveal .total .t { font-weight: 300; font-size: 4rem; letter-spacing: -0.04em; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
 .reveal .total .pt { color: var(--faint); font-size: 0.8125rem; margin-top: 0.25rem; }
