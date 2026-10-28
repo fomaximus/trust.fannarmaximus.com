@@ -29,7 +29,7 @@ export async function handleApi(request, env, now = Date.now()) {
 	}
 }
 
-async function readBody(request) {
+export async function readBody(request) {
 	try {
 		const body = await request.json();
 		if (!body || typeof body !== "object") throw new Error();

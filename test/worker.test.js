@@ -28,7 +28,7 @@ it("scheduled run deletes expired sessions", async () => {
 	expect(await findByToken(env.DB, s.creatorToken, 0)).toBeNull();
 });
 
-import { isSessionPath } from "../src/worker.js";
+import { isSessionPath, isTeamPath } from "../src/worker.js";
 
 it("plain http on the public host redirects to https", async () => {
 	const res = await exports.default.fetch("http://trust.fannarmaximus.com/s/abc?x=1", { redirect: "manual" });
@@ -56,3 +56,6 @@ it.each(["/s/abc", "/s/abc/", "/s/abc.", "/s/", "/s/a/b"])("%s is a session path
 	expect(isSessionPath(p)).toBe(true));
 it.each(["/", "/sx", "/new", "/api/sessions/abc"])("%s is not a session path", (p) =>
 	expect(isSessionPath(p)).toBe(false));
+
+it.each(["/t/abc", "/t/abc/", "/t/"])("%s is a team path", (p) => expect(isTeamPath(p)).toBe(true));
+it.each(["/team", "/t", "/s/abc"])("%s is not a team path", (p) => expect(isTeamPath(p)).toBe(false));
