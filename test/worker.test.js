@@ -19,3 +19,26 @@ it("scheduled run deletes expired sessions", async () => {
 	await exports.default.scheduled({ scheduledTime: Date.now(), cron: "0 3 * * *" }, env, { waitUntil() {} });
 	expect(await findByToken(env.DB, s.creatorToken, 0)).toBeNull();
 });
+
+import { isSessionPath } from "../src/worker.js";
+
+it("plain http on the public host redirects to https", async () => {
+	const res = await exports.default.fetch("http://trust.fannarmaximus.com/s/abc?x=1", { redirect: "manual" });
+	expect(res.status).toBe(301);
+	expect(res.headers.get("location")).toBe("https://trust.fannarmaximus.com/s/abc?x=1");
+});
+
+it("plain http on localhost is not redirected (dev)", async () => {
+	const res = await exports.default.fetch("http://localhost:8787/api/nope");
+	expect(res.status).toBe(404);
+});
+
+it("https responses carry HSTS", async () => {
+	const res = await exports.default.fetch("https://trust.test/api/nope");
+	expect(res.headers.get("strict-transport-security")).toBe("max-age=31536000");
+});
+
+it.each(["/s/abc", "/s/abc/", "/s/abc.", "/s/", "/s/a/b"])("%s is a session path", (p) =>
+	expect(isSessionPath(p)).toBe(true));
+it.each(["/", "/sx", "/new", "/api/sessions/abc"])("%s is not a session path", (p) =>
+	expect(isSessionPath(p)).toBe(false));

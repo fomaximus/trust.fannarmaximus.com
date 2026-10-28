@@ -1,7 +1,8 @@
 // Session page: one HTML file, four states, driven by GET /api/sessions/:token.
 (function () {
 	var F = window.TrustForm;
-	var token = location.pathname.split("/").pop();
+	// Tolerate a trailing slash or punctuation a chat app may have glued on.
+	var token = (location.pathname.split("/").filter(Boolean).pop() || "").replace(/[^A-Za-z0-9_-]/g, "");
 	var api = "/api/sessions/" + token;
 	var sections = ["loading", "waiting", "score", "reveal", "gone"];
 	var pollTimer = null;
@@ -22,12 +23,24 @@
 		return n;
 	}
 
+	function showRetry() {
+		var box = document.getElementById("loading");
+		box.innerHTML = "";
+		var btn = el("button", "button", "Couldn't load. Tap to retry.");
+		btn.type = "button";
+		btn.addEventListener("click", function () { box.textContent = "…"; load(); });
+		box.appendChild(btn);
+		show("loading");
+	}
+
+	// Resolves true when a state was rendered, false otherwise.
 	async function load() {
 		var res;
-		try { res = await fetch(api, { cache: "no-store" }); } catch (e) { return; }
-		if (res.status === 404) { show("gone"); return; }
-		if (!res.ok) return;
+		try { res = await fetch(api, { cache: "no-store" }); } catch (e) { showRetry(); return false; }
+		if (res.status === 404) { clearInterval(pollTimer); show("gone"); return true; }
+		if (!res.ok) { showRetry(); return false; }
 		render(await res.json());
+		return true;
 	}
 
 	function render(d) {
@@ -84,7 +97,12 @@
 					headers: { "content-type": "application/json" },
 					body: JSON.stringify({ name: name, given: g, predicted: p }),
 				});
-				if (res.status === 200 || res.status === 409) { window.scrollTo(0, 0); await load(); return; }
+				if (res.status === 200 || res.status === 409) {
+					// Scores are saved either way; if the follow-up read fails, a reload shows the reveal.
+					window.scrollTo(0, 0);
+					if (!(await load())) location.reload();
+					return;
+				}
 				if (res.status === 404) { show("gone"); return; }
 				var body = await res.json().catch(function () { return {}; });
 				showError(body.message || "Something went wrong.");
