@@ -124,10 +124,11 @@ Edge states the builder must handle:
   keep link text in the foreground colour with an accent underline.
 - **Modes:** follow `prefers-color-scheme`; a small text toggle ("dark" /
   "light") in a corner overrides and persists in localStorage.
-- **Type:** display serif for headings and the formula, quiet sans for forms
-  and body. My call: Cormorant Garamond + Inter, loaded from Google Fonts or
-  self-hosted. Builder may substitute a similar pairing (e.g. Fraunces +
-  Inter).
+- **Type:** (revised 2026-10-28 after the owner shared a reference) Inter only,
+  self-hosted. Headings and the formula in weight 800 with tight tracking;
+  subtitles in the muted grey; a short centred 1px rule; captions in a lighter
+  grey. Everything centred, with a faint 1px rounded frame around the content
+  on wide screens.
 - **Layout:** single centred column, generous whitespace, max ~640px for text,
   phone-first. No boxes, no borders where whitespace will do.
 - **Inputs:** range sliders 1–10 with the current value shown large next to
