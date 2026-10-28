@@ -88,6 +88,12 @@ a {
 }
 a:hover { text-decoration-thickness: 3px; }
 
+/* spacing utilities (CSP forbids inline style attributes) */
+.mt-1 { margin-top: 1rem; } .mt-15 { margin-top: 1.5rem; } .mt-25 { margin-top: 2.5rem; }
+.mt-3 { margin-top: 3rem; } .mt-35 { margin-top: 3.5rem; } .mt-4 { margin-top: 4rem; }
+.factor .more { margin: 0.6rem auto 0; font-size: 0.875rem; color: var(--faint); }
+.factor .ask { margin: 0.4rem auto 0; font-size: 0.875rem; font-style: italic; color: var(--muted); }
+
 /* hero */
 .formula {
 	font-weight: 200;

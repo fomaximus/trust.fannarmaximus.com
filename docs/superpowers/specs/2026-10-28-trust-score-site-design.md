@@ -172,8 +172,8 @@ Edge states the builder must handle:
   route takes over its traffic in place, exactly as `www` does in the other
   project; do not use `custom_domain: true`, which fails when a record exists), `package.json` with
   `dev`/`deploy` scripts and wrangler 4.x as the only devDependency. Wrangler is
-  already logged in on this machine (OAuth, account id
-  <account-id>), so `npm run deploy` publishes. Fonts in
+  already logged in on this machine (OAuth; see `wrangler whoami`), so
+  `npm run deploy` publishes. Fonts in
   that project are self-hosted under `public/fonts` with the OFL licence file
   alongside; do the same here. Repo should be initialised as git (directory is
   currently not a repo) with a GitHub remote `fomaximus/trust.fannarmaximus.com`

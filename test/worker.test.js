@@ -33,9 +33,15 @@ it("plain http on localhost is not redirected (dev)", async () => {
 	expect(res.status).toBe(404);
 });
 
-it("https responses carry HSTS", async () => {
+it("https responses carry HSTS and the security headers", async () => {
 	const res = await exports.default.fetch("https://trust.test/api/nope");
 	expect(res.headers.get("strict-transport-security")).toBe("max-age=31536000");
+	expect(res.headers.get("x-frame-options")).toBe("DENY");
+	expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+	expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+	expect(res.headers.get("content-security-policy")).toBe(
+		"default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+	);
 });
 
 it.each(["/s/abc", "/s/abc/", "/s/abc.", "/s/", "/s/a/b"])("%s is a session path", (p) =>

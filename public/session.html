@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trust</title>
 <meta name="robots" content="noindex">
+<meta name="description" content="Score them back to reveal both. Nothing is shown until you both have.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Trust Equation">
+<meta property="og:title" content="Someone scored you on the Trust Equation">
+<meta property="og:description" content="Score them back to reveal both. Nothing is shown until you both have.">
+<meta property="og:url" content="https://trust.fannarmaximus.com/">
+<meta property="og:image" content="https://trust.fannarmaximus.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="T = (C + R + I) / S — The Trust Equation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Someone scored you on the Trust Equation">
+<meta name="twitter:description" content="Score them back to reveal both. Nothing is shown until you both have.">
+<meta name="twitter:image" content="https://trust.fannarmaximus.com/og.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <script src="/theme.js"></script>
@@ -17,7 +31,7 @@
 
 	<section id="waiting" hidden>
 		<h1>Sealed.</h1>
-		<p class="lead" style="margin-top:1.5rem">Send this to <span class="n invitee"></span></p>
+		<p class="mt-15 lead">Send this to <span class="n invitee"></span></p>
 		<div class="share">
 			<input type="text" id="share-url" readonly>
 			<button class="button" type="button" id="copy">Copy</button>
@@ -28,15 +42,15 @@
 
 	<section id="score" hidden>
 		<h1><span class="n creator"></span> has scored you on the Trust Equation.</h1>
-		<p class="lead" style="margin-top:1.5rem">Score them back to reveal both.</p>
+		<p class="mt-15 lead">Score them back to reveal both.</p>
 		<hr class="rule">
 		<p class="small faint"><a href="/">What is the Trust Equation?</a></p>
-		<form id="score-form" novalidate style="margin-top:4rem">
+		<form class="mt-4" id="score-form" novalidate>
 			<label class="field"><span>Your first name</span><input type="text" id="my-name" maxlength="40" required autocomplete="given-name"></label>
 			<div id="given"></div>
 			<div id="predicted"></div>
 			<p class="error" id="error" hidden></p>
-			<p style="margin-top:3rem"><button class="button big" type="submit" id="submit">Seal and reveal</button></p>
+			<p class="mt-3"><button class="button big" type="submit" id="submit">Seal and reveal</button></p>
 		</form>
 	</section>
 
@@ -46,13 +60,13 @@
 			<div id="col-creator"></div>
 			<div id="col-invitee"></div>
 		</div>
-		<hr class="rule" style="margin-top:3.5rem">
+		<hr class="mt-35 rule">
 		<p class="faint">The gaps are the conversation.</p>
 	</section>
 
 	<section id="gone" hidden>
 		<h1>This link has expired or doesn't exist.</h1>
-		<p style="margin-top:2.5rem"><a class="button big" href="/new">Start a new one</a></p>
+		<p class="mt-25"><a class="button big" href="/new">Start a new one</a></p>
 	</section>
 
 </main>

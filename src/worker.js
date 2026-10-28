@@ -5,16 +5,23 @@ import { handleApi } from "./api.js";
 import { deleteExpired } from "./store.js";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
-const HSTS = "max-age=31536000";
+const SECURITY_HEADERS = {
+	"strict-transport-security": "max-age=31536000",
+	"x-frame-options": "DENY",
+	"x-content-type-options": "nosniff",
+	"referrer-policy": "no-referrer",
+	"content-security-policy":
+		"default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+};
 
 // Anything under /s/ is a session page; the page itself asks the API whether the token is real.
 export function isSessionPath(pathname) {
 	return pathname.startsWith("/s/");
 }
 
-function withHsts(res) {
+function secure(res) {
 	const out = new Response(res.body, res);
-	out.headers.set("strict-transport-security", HSTS);
+	for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
 	return out;
 }
 
@@ -26,12 +33,12 @@ export default {
 			return Response.redirect(url.toString(), 301);
 		}
 		if (url.pathname.startsWith("/api/")) {
-			return withHsts(await handleApi(request, env));
+			return secure(await handleApi(request, env));
 		}
 		if (isSessionPath(url.pathname)) {
-			return withHsts(await env.ASSETS.fetch(new Request(new URL("/session", request.url), request)));
+			return secure(await env.ASSETS.fetch(new Request(new URL("/session", request.url), request)));
 		}
-		return withHsts(await env.ASSETS.fetch(request));
+		return secure(await env.ASSETS.fetch(request));
 	},
 
 	// Nightly: drop sessions past their 90-day expiry.
