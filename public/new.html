@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score someone</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
+</head>
+<body>
+<button class="mode-toggle" type="button" aria-label="Switch colour mode"></button>
+<main class="wrap">
+	<h1>Score someone</h1>
+	<p class="muted" style="margin-top:1rem">Rate them, guess how they'll rate you, then send them the link. <a href="/">What's the Trust Equation?</a></p>
+
+	<form id="new-form" novalidate style="margin-top:3rem">
+		<label class="field"><span>Your first name</span><input type="text" id="creator-name" maxlength="40" required autocomplete="given-name"></label>
+		<label class="field"><span>Their first name</span><input type="text" id="invitee-name" maxlength="40" required autocomplete="off"></label>
+
+		<div id="given"></div>
+		<div id="predicted"></div>
+
+		<p class="error" id="error" hidden></p>
+		<p style="margin-top:3rem"><button class="button big" type="submit" id="submit">Seal my scores</button></p>
+	</form>
+</main>
+<script src="/form.js"></script>
+<script src="/new.js"></script>
+</body>
+</html>
