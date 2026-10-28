@@ -204,9 +204,9 @@ fieldset.factor-row:last-child { box-shadow: 0 -1px 0 var(--rule), 0 1px 0 var(-
 .reveal h3 { margin-bottom: 1rem; }
 .reveal table { border-collapse: collapse; width: 100%; }
 .reveal td { padding: 0.5rem 0; border-top: 1px solid var(--rule); vertical-align: baseline; }
-.reveal td.k { font-family: var(--serif); font-size: 1.25rem; width: 60%; }
-.reveal td.v { font-size: 1.5rem; font-variant-numeric: tabular-nums; width: 20%; text-align: right; font-family: var(--serif); }
-.reveal td.p { color: var(--muted); font-size: 0.8125rem; text-align: right; white-space: nowrap; }
+.reveal td.k { font-family: var(--serif); font-size: 1.25rem; white-space: nowrap; }
+.reveal td.v { font-size: 1.5rem; font-variant-numeric: tabular-nums; text-align: right; font-family: var(--serif); padding-left: 1rem; }
+.reveal td.p { color: var(--muted); font-size: 0.75rem; text-align: right; white-space: nowrap; padding-left: 0.75rem; width: 1%; }
 .reveal .total { margin-top: 1.5rem; }
 .reveal .total .t { font-family: var(--serif); font-weight: 300; font-size: 4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
 .reveal .total .pt { color: var(--muted); font-size: 0.875rem; }

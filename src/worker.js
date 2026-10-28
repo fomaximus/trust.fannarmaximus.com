@@ -12,7 +12,7 @@ export default {
 			return handleApi(request, env);
 		}
 		if (SESSION_PATH.test(url.pathname)) {
-			return env.ASSETS.fetch(new Request(new URL("/session.html", request.url), request));
+			return env.ASSETS.fetch(new Request(new URL("/session", request.url), request));
 		}
 		return env.ASSETS.fetch(request);
 	},

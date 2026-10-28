@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
+</head>
+<body>
+<button class="mode-toggle" type="button" aria-label="Switch colour mode"></button>
+<main class="wrap">
+
+	<section id="loading"><p class="muted">…</p></section>
+
+	<section id="waiting" hidden>
+		<h1>Sealed.</h1>
+		<p style="margin-top:1.5rem">Send this to <span class="n invitee"></span>:</p>
+		<div class="share">
+			<input type="text" id="share-url" readonly>
+			<button class="button" type="button" id="copy">Copy</button>
+		</div>
+		<p class="small muted">This page is yours. Keep the link; it opens the reveal once <span class="n invitee"></span> has scored.</p>
+	</section>
+
+	<section id="score" hidden>
+		<h1><span class="n creator"></span> has scored you on the Trust Equation.</h1>
+		<p class="muted" style="margin-top:1rem">Score them back to reveal both. <a href="/">What is that?</a></p>
+		<form id="score-form" novalidate style="margin-top:3rem">
+			<label class="field"><span>Your first name</span><input type="text" id="my-name" maxlength="40" required autocomplete="given-name"></label>
+			<div id="given"></div>
+			<div id="predicted"></div>
+			<p class="error" id="error" hidden></p>
+			<p style="margin-top:3rem"><button class="button big" type="submit" id="submit">Seal and reveal</button></p>
+		</form>
+	</section>
+
+	<section id="reveal" hidden>
+		<h1><span class="n creator"></span> &amp; <span class="n invitee"></span></h1>
+		<div class="reveal">
+			<div id="col-creator"></div>
+			<div id="col-invitee"></div>
+		</div>
+		<p class="muted" style="margin-top:3rem">The gaps are the conversation.</p>
+	</section>
+
+	<section id="gone" hidden>
+		<h1>This link has expired or doesn't exist.</h1>
+		<p style="margin-top:1.5rem"><a class="button big" href="/new">Start a new one</a></p>
+	</section>
+
+</main>
+<script src="/form.js"></script>
+<script src="/session.js"></script>
+</body>
+</html>
