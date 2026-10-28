@@ -19,7 +19,7 @@
 	],
 	"workers_dev": false,
 	"observability": { "enabled": true },
-	"triggers": { "crons": ["0 3 * * *"] },
+	"triggers": { "crons": ["0 * * * *"] },
 	"routes": [
 		// A proxied DNS record for the subdomain already exists, so a zone route takes over its traffic in place.
 		{ "pattern": "trust.fannarmaximus.com/*", "zone_name": "fannarmaximus.com" }

@@ -1,6 +1,6 @@
 // D1 persistence for sessions. Every function takes the DB binding first.
 
-import { SESSION_TTL_MS } from "./session.js";
+import { SESSION_TTL_MS, computeT } from "./session.js";
 
 export function randomToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -61,7 +61,58 @@ export async function countRecentCreations(db, creatorIpHash, since) {
 	return row.n;
 }
 
-export async function deleteExpired(db, now) {
-	const result = await db.prepare(`DELETE FROM sessions WHERE expires_at <= ?`).bind(now).run();
+function dayOf(ms) {
+	return new Date(ms).toISOString().slice(0, 10);
+}
+
+// Copies a completed session's sixteen numbers into stats (no names, tokens or IP)
+// and removes the session. Returns false if the session is missing or unfinished.
+export async function anonymiseSession(db, id, now) {
+	const row = await db.prepare(`SELECT * FROM sessions WHERE id = ?`).bind(id).first();
+	if (!row || !row.invitee_scores) return false;
+	const a = JSON.parse(row.creator_scores);
+	const b = JSON.parse(row.invitee_scores);
+	const insert = db
+		.prepare(
+			`INSERT INTO stats (day, a_c, a_r, a_i, a_s, a_pc, a_pr, a_pi, a_ps,
+			                    b_c, b_r, b_i, b_s, b_pc, b_pr, b_pi, b_ps, a_t, a_pt, b_t, b_pt)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		)
+		.bind(
+			dayOf(row.created_at),
+			a.given.c, a.given.r, a.given.i, a.given.s, a.predicted.c, a.predicted.r, a.predicted.i, a.predicted.s,
+			b.given.c, b.given.r, b.given.i, b.given.s, b.predicted.c, b.predicted.r, b.predicted.i, b.predicted.s,
+			computeT(a.given), computeT(a.predicted), computeT(b.given), computeT(b.predicted),
+		);
+	const remove = db.prepare(`DELETE FROM sessions WHERE id = ?`).bind(id);
+	await db.batch([insert, remove]);
+	return true;
+}
+
+export async function deleteSession(db, id) {
+	const result = await db.prepare(`DELETE FROM sessions WHERE id = ?`).bind(id).run();
+	return result.meta.changes === 1;
+}
+
+// Expired sessions: completed ones are kept anonymously, unfinished ones are dropped.
+export async function anonymiseExpired(db, now) {
+	const { results } = await db
+		.prepare(`SELECT id, invitee_scores IS NOT NULL AS done FROM sessions WHERE expires_at <= ?`)
+		.bind(now)
+		.all();
+	let kept = 0, dropped = 0;
+	for (const r of results) {
+		if (r.done && (await anonymiseSession(db, r.id, now))) kept++;
+		else if (await deleteSession(db, r.id)) dropped++;
+	}
+	return { kept, dropped };
+}
+
+// The IP hash only serves the one-hour rate limit; forget it once it is older than the cutoff.
+export async function clearOldIpHashes(db, before) {
+	const result = await db
+		.prepare(`UPDATE sessions SET creator_ip_hash = '' WHERE created_at < ? AND creator_ip_hash != ''`)
+		.bind(before)
+		.run();
 	return result.meta.changes;
 }

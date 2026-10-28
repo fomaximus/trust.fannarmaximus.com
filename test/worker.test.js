@@ -12,6 +12,14 @@ import { env } from "cloudflare:workers";
 import { createSession, findByToken } from "../src/store.js";
 import { SESSION_TTL_MS } from "../src/session.js";
 
+it("scheduled run clears ip hashes older than a day", async () => {
+	const scores = { given: { c: 1, r: 1, i: 1, s: 1 }, predicted: { c: 1, r: 1, i: 1, s: 1 } };
+	await createSession(env.DB, { creatorName: "A", inviteeName: "B", creatorScores: scores, creatorIpHash: "stale", now: Date.now() - 25 * 3_600_000 });
+	await exports.default.scheduled({ scheduledTime: Date.now(), cron: "0 * * * *" }, env, { waitUntil() {} });
+	const row = await env.DB.prepare("SELECT creator_ip_hash FROM sessions WHERE creator_ip_hash = 'stale'").first();
+	expect(row).toBeNull();
+});
+
 it("scheduled run deletes expired sessions", async () => {
 	const old = Date.now() - SESSION_TTL_MS - 1;
 	const scores = { given: { c: 1, r: 1, i: 1, s: 1 }, predicted: { c: 1, r: 1, i: 1, s: 1 } };

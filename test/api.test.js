@@ -81,3 +81,36 @@ describe("POST /api/sessions/:token/score", () => {
 	it("404 unknown token", async () =>
 		expect((await post("/api/sessions/zzzzzzzzzzzzzzzzzzzzzz/score", mine)).status).toBe(404));
 });
+
+import { hashIp } from "../src/api.js";
+
+describe("DELETE /api/sessions/:token", () => {
+	const mine = { given: { c: 9, r: 9, i: 9, s: 1 }, predicted: { c: 5, r: 5, i: 5, s: 5 } };
+	const del = (t) => exports.default.fetch(`${base}/api/sessions/${t}`, { method: "DELETE" });
+	it("either party can delete; both links die", async () => {
+		for (const who of ["creatorToken", "inviteeToken"]) {
+			const made = await create();
+			await post(`/api/sessions/${made.inviteeToken}/score`, mine);
+			const res = await del(made[who]);
+			expect(res.status).toBe(200);
+			expect(await res.json()).toEqual({ deleted: true });
+			expect((await get(`/api/sessions/${made.creatorToken}`)).status).toBe(404);
+			expect((await get(`/api/sessions/${made.inviteeToken}`)).status).toBe(404);
+		}
+	});
+	it("an unfinished session can be deleted too", async () => {
+		const made = await create();
+		expect((await del(made.creatorToken)).status).toBe(200);
+		expect((await get(`/api/sessions/${made.inviteeToken}`)).status).toBe(404);
+	});
+	it("404 for unknown token", async () => expect((await del("zzzzzzzzzzzzzzzzzzzzzz")).status).toBe(404));
+});
+
+describe("hashIp", () => {
+	it("is 64 hex chars and depends on the salt", async () => {
+		const a = await hashIp("1.2.3.4", "salt-a");
+		const b = await hashIp("1.2.3.4", "salt-b");
+		expect(a).toMatch(/^[0-9a-f]{64}$/);
+		expect(a).not.toBe(b);
+	});
+});

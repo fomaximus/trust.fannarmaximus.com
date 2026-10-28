@@ -1,10 +1,10 @@
 import { env } from "cloudflare:workers";
-import { describe, it, expect } from "vitest";
-import { createSession, findByToken, submitInviteeScores, countRecentCreations, deleteExpired, randomToken } from "../src/store.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import { createSession, findByToken, submitInviteeScores, countRecentCreations, randomToken } from "../src/store.js";
 import { SESSION_TTL_MS } from "../src/session.js";
 
 const scores = { given: { c: 8, r: 7, i: 5, s: 8 }, predicted: { c: 6, r: 6, i: 6, s: 6 } };
-const now = 1_800_000_000_000;
+const now = Date.UTC(2027, 0, 15, 12);
 const make = (ip = "hash-a", at = now) =>
 	createSession(env.DB, { creatorName: "Anna", inviteeName: "Bjarni", creatorScores: scores, creatorIpHash: ip, now: at });
 
@@ -54,9 +54,56 @@ describe("store", () => {
 		await make("ip-x", now - 7_200_000);
 		expect(await countRecentCreations(env.DB, "ip-x", now - 3_600_000)).toBe(2);
 	});
-	it("deletes expired rows", async () => {
-		const s = await make("ip-z", now - SESSION_TTL_MS - 1);
-		expect(await deleteExpired(env.DB, now)).toBeGreaterThanOrEqual(1);
-		expect(await findByToken(env.DB, s.creatorToken, 0)).toBeNull();
+});
+
+import { anonymiseSession, deleteSession, anonymiseExpired, clearOldIpHashes } from "../src/store.js";
+
+const mine = { given: { c: 9, r: 9, i: 9, s: 1 }, predicted: { c: 5, r: 5, i: 5, s: 5 } };
+const statsCount = async () => (await env.DB.prepare("SELECT COUNT(*) AS n FROM stats").first()).n;
+
+describe("anonymisation", () => {
+	// D1 rows persist across tests in this file, so start each case from empty tables.
+	beforeEach(async () => {
+		await env.DB.batch([env.DB.prepare("DELETE FROM sessions"), env.DB.prepare("DELETE FROM stats")]);
+	});
+	it("moves a completed session into stats without names or tokens", async () => {
+		const s = await make();
+		await submitInviteeScores(env.DB, s.inviteeToken, mine, now + 1);
+		expect(await anonymiseSession(env.DB, s.id, now)).toBe(true);
+		expect(await findByToken(env.DB, s.creatorToken, now)).toBeNull();
+		expect(await findByToken(env.DB, s.inviteeToken, now)).toBeNull();
+		const row = await env.DB.prepare("SELECT * FROM stats").first();
+		expect(row).toMatchObject({ day: "2027-01-15", a_c: 8, a_s: 8, a_pc: 6, b_c: 9, b_s: 1, b_ps: 5, a_t: 2.5, a_pt: 3, b_t: 27, b_pt: 3 });
+		expect(JSON.stringify(row)).not.toMatch(/Anna|Bjarni|token/);
+	});
+	it("refuses to anonymise an incomplete session", async () => {
+		const s = await make();
+		expect(await anonymiseSession(env.DB, s.id, now)).toBe(false);
+		expect(await findByToken(env.DB, s.creatorToken, now)).not.toBeNull();
+	});
+	it("deleteSession removes an incomplete session with no stats row", async () => {
+		const s = await make();
+		expect(await deleteSession(env.DB, s.id)).toBe(true);
+		expect(await findByToken(env.DB, s.creatorToken, now)).toBeNull();
+		expect(await statsCount()).toBe(0);
+	});
+	it("anonymiseExpired keeps completed scores, drops incomplete ones, leaves fresh ones", async () => {
+		const old = now - SESSION_TTL_MS - 1;
+		const done = await make("h", old);
+		await submitInviteeScores(env.DB, done.inviteeToken, mine, old + 1);
+		const undone = await make("h", old);
+		const fresh = await make("h", now);
+		expect(await anonymiseExpired(env.DB, now)).toEqual({ kept: 1, dropped: 1 });
+		expect(await statsCount()).toBe(1);
+		expect(await findByToken(env.DB, done.creatorToken, 0)).toBeNull();
+		expect(await findByToken(env.DB, undone.creatorToken, 0)).toBeNull();
+		expect(await findByToken(env.DB, fresh.creatorToken, now)).not.toBeNull();
+	});
+	it("clearOldIpHashes blanks hashes older than the cutoff only", async () => {
+		await make("old-ip", now - 25 * 3_600_000);
+		await make("new-ip", now - 1000);
+		expect(await clearOldIpHashes(env.DB, now - 24 * 3_600_000)).toBe(1);
+		expect(await countRecentCreations(env.DB, "old-ip", 0)).toBe(0);
+		expect(await countRecentCreations(env.DB, "new-ip", 0)).toBe(1);
 	});
 });

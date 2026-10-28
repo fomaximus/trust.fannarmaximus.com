@@ -2,7 +2,7 @@
 // rewrites /s/<token> to the session page so one HTML file handles every state.
 
 import { handleApi } from "./api.js";
-import { deleteExpired } from "./store.js";
+import { anonymiseExpired, clearOldIpHashes } from "./store.js";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const SECURITY_HEADERS = {
@@ -41,8 +41,10 @@ export default {
 		return secure(await env.ASSETS.fetch(request));
 	},
 
-	// Nightly: drop sessions past their 90-day expiry.
+	// Hourly: anonymise sessions past their 90-day expiry and forget day-old IP hashes.
 	async scheduled(controller, env) {
-		await deleteExpired(env.DB, Date.now());
+		const now = Date.now();
+		await anonymiseExpired(env.DB, now);
+		await clearOldIpHashes(env.DB, now - 24 * 60 * 60 * 1000);
 	},
 };

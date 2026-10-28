@@ -3,7 +3,7 @@
 
 import { json } from "./http.js";
 import { validateName, validateScores, visibleState, computeT, ValidationError } from "./session.js";
-import { createSession, findByToken, submitInviteeScores, countRecentCreations } from "./store.js";
+import { createSession, findByToken, submitInviteeScores, countRecentCreations, anonymiseSession, deleteSession } from "./store.js";
 
 const TOKEN = "([A-Za-z0-9_-]{22})";
 const CREATE = /^\/api\/sessions$/;
@@ -20,6 +20,7 @@ export async function handleApi(request, env, now = Date.now()) {
 		if (request.method === "POST" && CREATE.test(pathname)) return await create(request, env, now);
 		if (request.method === "GET" && (m = ONE.exec(pathname))) return await read(m[1], env, now);
 		if (request.method === "POST" && (m = SCORE.exec(pathname))) return await score(request, m[1], env, now);
+		if (request.method === "DELETE" && (m = ONE.exec(pathname))) return await remove(m[1], env, now);
 		return json({ error: "not_found" }, 404);
 	} catch (err) {
 		if (err instanceof ValidationError) return json({ error: "invalid", message: err.message }, 400);
@@ -38,10 +39,15 @@ async function readBody(request) {
 	}
 }
 
-async function ipHash(request) {
-	const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
-	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip));
+// Salted so the stored hash cannot be reversed into an address. The salt is a Worker secret.
+export async function hashIp(ip, salt) {
+	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${salt}:${ip}`));
 	return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function ipHash(request, env) {
+	if (!env.IP_SALT) console.warn("IP_SALT is not set; using an unsalted hash");
+	return hashIp(request.headers.get("cf-connecting-ip") ?? "unknown", env.IP_SALT ?? "");
 }
 
 async function create(request, env, now) {
@@ -49,7 +55,7 @@ async function create(request, env, now) {
 	const creatorName = validateName(body.creatorName);
 	const inviteeName = validateName(body.inviteeName);
 	const creatorScores = validateScores(body);
-	const creatorIpHash = await ipHash(request);
+	const creatorIpHash = await ipHash(request, env);
 	if ((await countRecentCreations(env.DB, creatorIpHash, now - RATE_WINDOW_MS)) >= RATE_LIMIT) {
 		return json({ error: "rate_limited" }, 429);
 	}
@@ -84,4 +90,13 @@ async function score(request, token, env, now) {
 	const ok = await submitInviteeScores(env.DB, token, scores, now, name);
 	if (!ok) return json({ error: "already_scored" }, 409);
 	return json({ state: "revealed" });
+}
+
+// Either party may delete. Finished sessions keep their numbers anonymously; unfinished ones vanish.
+async function remove(token, env, now) {
+	const session = await findByToken(env.DB, token, now);
+	if (!session) return json({ error: "not_found" }, 404);
+	if (session.inviteeScores) await anonymiseSession(env.DB, session.id, now);
+	else await deleteSession(env.DB, session.id);
+	return json({ deleted: true });
 }
