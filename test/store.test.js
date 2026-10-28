@@ -40,6 +40,10 @@ describe("store", () => {
 		await submitInviteeScores(env.DB, s.inviteeToken, scores, now, "Bjarki");
 		expect((await findByToken(env.DB, s.creatorToken, now)).inviteeName).toBe("Bjarki");
 	});
+	it("expired invitee token cannot submit", async () => {
+		const s = await make("h", now - SESSION_TTL_MS - 1);
+		expect(await submitInviteeScores(env.DB, s.inviteeToken, scores, now)).toBe(false);
+	});
 	it("creator token cannot be used to submit", async () => {
 		const s = await make();
 		expect(await submitInviteeScores(env.DB, s.creatorToken, scores, now)).toBe(false);

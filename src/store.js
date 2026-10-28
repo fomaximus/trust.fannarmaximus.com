@@ -46,9 +46,9 @@ export async function submitInviteeScores(db, inviteeToken, scores, now, name = 
 		.prepare(
 			`UPDATE sessions
 			 SET invitee_scores = ?, invitee_submitted_at = ?, invitee_name = COALESCE(?, invitee_name)
-			 WHERE invitee_token = ? AND invitee_scores IS NULL`,
+			 WHERE invitee_token = ? AND invitee_scores IS NULL AND expires_at > ?`,
 		)
-		.bind(JSON.stringify(scores), now, name, inviteeToken)
+		.bind(JSON.stringify(scores), now, name, inviteeToken, now)
 		.run();
 	return result.meta.changes === 1;
 }
