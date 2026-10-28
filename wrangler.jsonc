@@ -1,0 +1,23 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "trust-fannarmaximus-com",
+	"main": "src/worker.js",
+	"compatibility_date": "2026-10-28",
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*", "/s/*"]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "trust-sessions",
+			"database_id": "63042f10-e57a-463f-a389-adca9081ff82",
+			"migrations_dir": "migrations"
+		}
+	],
+	"routes": [
+		// A proxied DNS record for the subdomain already exists, so a zone route takes over its traffic in place.
+		{ "pattern": "trust.fannarmaximus.com/*", "zone_name": "fannarmaximus.com" }
+	]
+}
