@@ -2,6 +2,7 @@
 // rewrites /s/<token> to the session page so one HTML file handles every state.
 
 import { handleApi } from "./api.js";
+import { handleMatchApi } from "./matchapi.js";
 import { anonymiseExpired, clearOldIpHashes } from "./store.js";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
@@ -19,6 +20,10 @@ export function isSessionPath(pathname) {
 	return pathname.startsWith("/s/");
 }
 
+export function isMatchPath(pathname) {
+	return pathname.startsWith("/m/");
+}
+
 function secure(res) {
 	const out = new Response(res.body, res);
 	for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
@@ -32,8 +37,14 @@ export default {
 			url.protocol = "https:";
 			return Response.redirect(url.toString(), 301);
 		}
+		if (url.pathname.startsWith("/api/matches")) {
+			return secure(await handleMatchApi(request, env));
+		}
 		if (url.pathname.startsWith("/api/")) {
 			return secure(await handleApi(request, env));
+		}
+		if (isMatchPath(url.pathname)) {
+			return secure(await env.ASSETS.fetch(new Request(new URL("/matchpage", request.url), request)));
 		}
 		if (isSessionPath(url.pathname)) {
 			return secure(await env.ASSETS.fetch(new Request(new URL("/session", request.url), request)));
