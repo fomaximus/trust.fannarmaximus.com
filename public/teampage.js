@@ -89,11 +89,17 @@
 			}
 			if (!pollTimer) pollTimer = setInterval(load, 10000);
 		}
-		renderRoster(d, isCreator);
+		// Rebuild roster and controls only when they would change, so a poll never resets an armed two-tap.
+		var key = JSON.stringify([d.state, d.you.answered, d.members.map(function (m) { return [m.id, m.nickname, m.answered]; })]);
+		if (key !== lastKey) {
+			lastKey = key;
+			renderRoster(d, isCreator);
+			renderControls(d, isCreator);
+		}
 		setHidden("roster-section", false);
-		renderControls(d, isCreator);
 		setHidden("controls", false);
 	}
+	var lastKey = null;
 
 	function renderLinks(links, youId) {
 		var list = $("links-list");

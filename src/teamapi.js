@@ -102,7 +102,8 @@ async function remove(request, token, env, now) {
 	const body = await readBody(request);
 	const check = canRemove(found.members, body.memberId);
 	if (!check.ok) return json({ error: check.reason }, check.reason === "not_found" ? 404 : 409);
-	await removeMember(env.DB, body.memberId);
+	// The statement itself re-checks "unanswered" and the size floor; a lost race is a 409, not a success.
+	if (!(await removeMember(env.DB, body.memberId))) return json({ error: "answered_or_too_small" }, 409);
 	const after = await load(token, env, now);
 	return json({ state: teamState(after.team, after.you) });
 }
@@ -122,7 +123,7 @@ async function destroy(token, env, now) {
 	}
 	const check = canRemove(members, you.id);
 	if (!check.ok) return json({ error: check.reason }, 409);
-	await removeMember(env.DB, you.id);
+	if (!(await removeMember(env.DB, you.id))) return json({ error: "answered_or_too_small" }, 409);
 	// The leaver's token is gone; re-check the reveal through the creator's.
 	await load(members.find((m) => m.isCreator).token, env, now);
 	return json({ deleted: true });

@@ -1,5 +1,7 @@
 import { exports, env } from "cloudflare:workers";
 import "../src/worker.js";
+import { handleTeamApi } from "../src/teamapi.js";
+import { submitTeamScore } from "../src/teamstore.js";
 import { describe, it, expect } from "vitest";
 
 const base = "https://trust.test";
@@ -170,6 +172,33 @@ describe("DELETE /api/teams/:token", () => {
 		expect(after.members[1].nickname).toBe("");
 		expect(after.members[1].answered).toBe(true);
 		expect(after.reveal).toEqual(before);
+	});
+	it("a remove that loses the race to the target's score is 409, not success", async () => {
+		const t = await create(["Bjarni", "Clara", "Dora"]);
+		// Wrap the DB so the target answers between the API's read and its DELETE.
+		const real = env.DB;
+		const db = new Proxy(real, {
+			get(target, prop) {
+				if (prop !== "prepare") {
+					const v = Reflect.get(target, prop);
+					return typeof v === "function" ? v.bind(target) : v;
+				}
+				return (sql) => {
+					const stmt = target.prepare(sql);
+					if (!/DELETE FROM members WHERE id/.test(sql)) return stmt;
+					return {
+						bind: (...args) => {
+							const bound = stmt.bind(...args);
+							return { run: async () => { await submitTeamScore(real, args[0], { given: { c: 1, r: 1, i: 1, s: 1 } }, Date.now()); return bound.run(); } };
+						},
+					};
+				};
+			},
+		});
+		const req = new Request(`${base}/api/teams/${t.creatorToken}/remove`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ memberId: t.ids.Dora }) });
+		const res = await handleTeamApi(req, { DB: db, IP_SALT: env.IP_SALT });
+		expect(res.status).toBe(409);
+		expect((await view(t.creatorToken)).members.length).toBe(4);
 	});
 	it("unknown token is 404 on every route", async () => {
 		const z = "zzzzzzzzzzzzzzzzzzzzzz";
