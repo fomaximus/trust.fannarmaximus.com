@@ -1,6 +1,6 @@
 // Shared member-row editor for the create and setup forms. Exposes window.TrustMembers.
 (function () {
-	var MIN_OTHERS = 2, MAX_OTHERS = 7;
+	var MIN_OTHERS = 2, MAX_OTHERS = 11;
 	function attach(list, addBtn) {
 		function addRow(focus) {
 			if (list.children.length >= MAX_OTHERS) return;

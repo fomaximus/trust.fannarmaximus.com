@@ -3,7 +3,7 @@
 import { validateName, validateScores, ValidationError, computeT } from "./session.js";
 
 export const SIDE_MIN = 3;
-export const SIDE_MAX = 8;
+export const SIDE_MAX = 12;
 
 const FACTORS = ["c", "r", "i", "s"];
 

@@ -9,13 +9,15 @@ describe("validateMatch", () => {
 		expect(validateMatch(body)).toEqual({ myTeam: "Product", otherTeam: "Sales", creatorName: "Anna", members: ["Bjarni", "Clara"] }));
 	it.each([
 		["one other", { ...body, members: ["Bjarni"] }],
-		["eight others", { ...body, members: ["a", "b", "c", "d", "e", "f", "g", "h"] }],
+		["twelve others", { ...body, members: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"] }],
 		["duplicate of creator", { ...body, members: ["anna", "Bjarni"] }],
 		["duplicate member", { ...body, members: ["Bjarni", "bjarni "] }],
 		["missing other team", { ...body, otherTeam: " " }],
 		["missing my team", { ...body, myTeam: "" }],
 	])("rejects %s", (_, v) => expect(() => validateMatch(v)).toThrow(ValidationError));
-	it("bounds are 3 and 8", () => { expect(SIDE_MIN).toBe(3); expect(SIDE_MAX).toBe(8); });
+	it("accepts eleven others (twelve per team)", () =>
+		expect(validateMatch({ ...body, members: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"] }).members.length).toBe(11));
+	it("bounds are 3 and 12", () => { expect(SIDE_MIN).toBe(3); expect(SIDE_MAX).toBe(12); });
 });
 
 describe("validateSetup", () => {

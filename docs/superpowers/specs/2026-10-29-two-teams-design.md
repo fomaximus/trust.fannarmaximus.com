@@ -15,13 +15,13 @@ team received next to what it expected, so the two teams can discuss it.
 ## Flow
 
 1. **Create** `/match`: your team's name, the other team's name, your
-   nickname, your team's other members (2–7 nicknames). Submit creates the
+   nickname, your team's other members (2–11 nicknames). Submit creates the
    match with side A set up. The creator is side A's captain.
 2. **Side A captain page** `/m/<token>`: one link per side-A member (captain
    marked "you"), plus one **captain link for Team B** to send to whoever
    leads the other team. The captain's own rating form is below.
 3. **Captain link for Team B** `/m/<captainToken>`: first opening shows a
-   setup form: your nickname and your team's other members (2–7). On submit,
+   setup form: your nickname and your team's other members (2–11). On submit,
    side B exists, this very link becomes B's captain's member link, and the
    page shows B's member links and the rating form.
 4. **Member page** `/m/<token>`: "{other team} and {your team} are scoring
@@ -52,7 +52,7 @@ say we're all about the work, 10 = they'd say we're all about ourselves".
 ## Non-goals and anti-goals
 
 As the one-team spec: no reminders, no editing after submit, no accounts,
-sides of 3–8 only. Anti-goals: any individual's numbers shown to anyone;
+sides of 3–12 only. Anti-goals: any individual's numbers shown to anyone;
 a reveal while anyone is pending; a dropout that freezes a match with no
 way out; HR-tool look.
 
