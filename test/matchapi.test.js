@@ -34,7 +34,9 @@ async function create(members) {
 async function setup(m, members = ["Finnur", "Gunnar"]) {
 	const res = await post(`/api/matches/${m.captainLink}/setup`, { captainName: "Eva", members });
 	expect(res.status).toBe(200);
-	const body = await view(m.captainLink);
+	const { yourLink } = await res.json();
+	m.bCaptain = tok(yourLink);
+	const body = await view(m.bCaptain);
 	const b = {}, ids = {};
 	for (const l of body.links) b[l.nickname] = tok(l.url);
 	for (const x of body.teams.you.members) ids[x.nickname] = x.id;
@@ -80,14 +82,18 @@ describe("captain link for side b", () => {
 		expect((await post(`/api/matches/${m.captainLink}/remove`, { memberId: m.ids.Bjarni })).status).toBe(409);
 		expect((await del(`/api/matches/${m.captainLink}`)).status).toBe(409);
 	});
-	it("setup once; then the token is b's captain with links; a's captain loses the captainLink", async () => {
+	it("setup once; b's captain gets a fresh token; the link a saw is dead; a's captain loses the captainLink", async () => {
 		const m = await create();
 		const s = await setup(m);
+		expect(m.bCaptain).not.toBe(m.captainLink);
+		expect((await get(`/api/matches/${m.captainLink}`)).status).toBe(404);
 		expect(s.body).toMatchObject({ role: "captain", side: "b", state: "needs_your_score" });
 		expect(s.body.links.length).toBe(3);
 		expect(s.body.captainLink).toBeUndefined();
 		expect(s.body.teams.you.members.map((x) => x.nickname)).toEqual(["Eva", "Finnur", "Gunnar"]);
-		expect((await post(`/api/matches/${m.captainLink}/setup`, { captainName: "Eva", members: ["X", "Y"] })).status).toBe(409);
+		// the handed-over link is retired, so a second setup on it is simply unknown
+		expect((await post(`/api/matches/${m.captainLink}/setup`, { captainName: "Eva", members: ["X", "Y"] })).status).toBe(404);
+		expect((await post(`/api/matches/${m.bCaptain}/setup`, { captainName: "Eva", members: ["X", "Y"] })).status).toBe(409);
 		expect((await view(m.creatorToken)).captainLink).toBeUndefined();
 	});
 	it("setup rejects a side with duplicates but allows names also used on side a", async () => {
@@ -142,7 +148,7 @@ describe("remove", () => {
 		const s = await setup(m);
 		const remove = (t, id) => post(`/api/matches/${t}/remove`, { memberId: id });
 		expect((await remove(m.a.Bjarni, m.ids.Dora)).status).toBe(403);
-		expect((await remove(m.captainLink, m.ids.Dora)).status).toBe(403);
+		expect((await remove(m.bCaptain, m.ids.Dora)).status).toBe(403);
 		expect((await remove(m.creatorToken, s.ids.Finnur)).status).toBe(403);
 		await finish(m, s);
 		expect((await remove(m.creatorToken, m.ids.Clara)).status).toBe(409);

@@ -84,7 +84,9 @@ way out; HR-tool look.
     `reveal = { you: { received: {min,avg,max per c,r,i,s,t}, expected:
     {c,r,i,s,t} }, other: { same } }`, `you` meaning the caller's team.
   - `POST /api/matches/:token/setup` `{ captainName, members }` → claims a
-    B captain token; `409 { error: "already_set_up" }` on a second call.
+    B captain token and returns `yourLink`, a fresh token for B's captain;
+    the handed-over link is retired (404 afterwards), since side A's captain
+    has seen it. `409 { error: "already_set_up" }` on B's captain's own link.
   - `POST /api/matches/:token/score` `{ given, predicted }` → `200 { state }`.
   - `POST /api/matches/:token/remove` `{ memberId }` → captain of that
     member's side only.

@@ -44,11 +44,14 @@ describe("match store", () => {
 		expect(f.match.bCaptainToken).toBe(mt.bCaptainToken);
 	});
 
-	it("setupSideB works once; afterwards the token is b's captain", async () => {
+	it("setupSideB works once and mints a fresh captain token; the old link is retired", async () => {
 		const mt = await make();
-		expect(await setup(mt)).toBe(true);
-		expect(await setup(mt)).toBe(false);
-		const f = await findByToken(env.DB, mt.bCaptainToken, now);
+		const fresh = await setup(mt);
+		expect(fresh).toMatch(/^[A-Za-z0-9_-]{22}$/);
+		expect(fresh).not.toBe(mt.bCaptainToken);
+		expect(await setup(mt)).toBeNull();
+		expect(await findByToken(env.DB, mt.bCaptainToken, now)).toBeNull();
+		const f = await findByToken(env.DB, fresh, now);
 		expect(f.you.nickname).toBe("Eva");
 		expect(f.you.isCaptain).toBe(true);
 		expect(f.you.side).toBe("b");

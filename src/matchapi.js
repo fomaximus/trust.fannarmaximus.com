@@ -99,9 +99,11 @@ async function setup(request, token, origin, env, now) {
 	if (!found) return json({ error: "not_found" }, 404);
 	if (!found.you.unclaimedCaptain) return json({ error: "already_set_up" }, 409);
 	const data = validateSetup(await readBody(request));
-	if (!(await setupSideB(env.DB, found.match.id, token, data))) return json({ error: "already_set_up" }, 409);
-	const after = await load(token, env, now);
-	return json(present(after, origin));
+	const fresh = await setupSideB(env.DB, found.match.id, token, data);
+	if (!fresh) return json({ error: "already_set_up" }, 409);
+	const after = await load(fresh, env, now);
+	// The page moves to this link; the one side A handed over no longer works.
+	return json({ ...present(after, origin), yourLink: `${origin}/m/${fresh}` });
 }
 
 async function score(request, token, env, now) {

@@ -251,3 +251,43 @@ fieldset.factor-row:last-child { box-shadow: 0 -1px 0 var(--rule), 0 1px 0 var(-
 .reveal .total { margin-top: 1.75rem; }
 .reveal .total .t { font-weight: 300; font-size: 4rem; letter-spacing: -0.04em; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
 .reveal .total .pt { color: var(--faint); font-size: 0.8125rem; margin-top: 0.25rem; }
+
+/* member rows on the create / setup forms */
+.members-list { margin: 0 0 1rem; }
+.member-row { display: flex; gap: 0.75rem; align-items: baseline; margin-bottom: 1rem; }
+.member-row input[type="text"] { flex: 1 1 auto; min-width: 0; }
+.member-row .remove-row { font: inherit; font-size: 0.8125rem; color: var(--faint); background: none; border: 0; cursor: pointer; }
+.member-row .remove-row:hover { color: var(--fg); }
+
+/* match page: rosters, links, reveal tables */
+.rosters { display: grid; gap: 2rem; margin: 1.5rem auto 0; max-width: 34rem; }
+@media (min-width: 40rem) { .rosters { grid-template-columns: 1fr 1fr; } }
+.rosters h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.roster { list-style: none; padding: 0; margin: 0; }
+.roster li { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0; border-top: 1px solid var(--rule); }
+.roster li:last-child { border-bottom: 1px solid var(--rule); }
+.roster .who { text-align: left; }
+.roster .who small { color: var(--faint); margin-left: 0.4em; }
+.roster .mark { width: 1rem; height: 1rem; border-radius: 50%; border: 1px solid var(--rule); flex: 0 0 auto; }
+.roster .done .mark { background: var(--accent); border-color: var(--accent); }
+.roster .pending-side { color: var(--faint); font-size: 0.875rem; padding: 0.5rem 0; }
+.roster .remove-member { font: inherit; font-size: 0.75rem; color: var(--faint); background: none; border: 0; cursor: pointer; }
+.roster .remove-member:hover:not(:disabled) { color: var(--fg); }
+.roster .remove-member:disabled { opacity: 0.4; cursor: default; }
+.links { list-style: none; padding: 0; margin: 1.5rem auto 0; max-width: 34rem; text-align: left; }
+.links li { margin-bottom: 1rem; }
+.links .who { font-size: 0.8125rem; color: var(--muted); }
+.links .who small { color: var(--faint); margin-left: 0.4em; }
+.links li.captain-link { margin-top: 2rem; }
+.reveal-tables { display: grid; gap: 3rem; margin-top: 2rem; }
+@media (min-width: 44rem) { .reveal-tables { grid-template-columns: 1fr 1fr; gap: 2rem; } }
+.reveal-tables h3 { font-size: 1.0625rem; margin-bottom: 0.75rem; }
+.reveal-table { border-collapse: collapse; margin: 0 auto; width: 100%; max-width: 22rem; }
+.reveal-table th { font-weight: 500; font-size: 0.6875rem; color: var(--faint); letter-spacing: 0.04em; text-transform: uppercase; padding: 0 0 0.5rem 0.75rem; text-align: right; }
+.reveal-table th:first-child, .reveal-table td:first-child { text-align: left; padding-left: 0; }
+.reveal-table td { padding: 0.55rem 0 0.55rem 0.75rem; border-top: 1px solid var(--rule); text-align: right; font-variant-numeric: tabular-nums; }
+.reveal-table td:first-child { font-size: 0.875rem; }
+.reveal-table td.exp { color: var(--muted); }
+.reveal-table tr.total td { font-size: 1.25rem; font-weight: 300; }
+.reveal-table tr.total td:first-child { font-size: 0.9375rem; font-weight: 500; }
+.reveal-table tr.total td.avg { color: var(--accent); }

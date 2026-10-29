@@ -76,21 +76,23 @@ export async function findByToken(db, token, now) {
 	return { match: toMatch(byCaptain), sides, you: { unclaimedCaptain: true, side: "b" } };
 }
 
-// Claims the B captain link: the captain's member token is the link itself, so it keeps working.
+// Claims the B captain link. Side A's captain has seen that link, so B's captain gets a fresh
+// token of their own and the claim link is retired. Returns the new token, or null if already claimed.
 export async function setupSideB(db, matchId, captainToken, { captainName, members }) {
 	const side = await db.prepare(`SELECT id FROM sides WHERE match_id = ? AND label = 'b'`).bind(matchId).first();
-	if (!side) return false;
+	if (!side) return null;
 	const claim = await db
 		.prepare(`UPDATE matches SET b_captain_token = NULL WHERE id = ? AND b_captain_token = ?`)
 		.bind(matchId, captainToken)
 		.run();
-	if (claim.meta.changes !== 1) return false;
+	if (claim.meta.changes !== 1) return null;
+	const fresh = randomToken();
 	const insertMember = db.prepare(`INSERT INTO members (id, side_id, token, nickname, is_captain) VALUES (?, ?, ?, ?, ?)`);
 	await db.batch([
-		insertMember.bind(randomToken(), side.id, captainToken, captainName, 1),
+		insertMember.bind(randomToken(), side.id, fresh, captainName, 1),
 		...members.map((n) => insertMember.bind(randomToken(), side.id, randomToken(), n, 0)),
 	]);
-	return true;
+	return fresh;
 }
 
 export async function submitMatchScore(db, memberId, scores, now) {
