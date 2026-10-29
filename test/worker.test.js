@@ -28,7 +28,7 @@ it("scheduled run deletes expired sessions", async () => {
 	expect(await findByToken(env.DB, s.creatorToken, 0)).toBeNull();
 });
 
-import { isSessionPath, isTeamPath } from "../src/worker.js";
+import { isSessionPath } from "../src/worker.js";
 
 it("plain http on the public host redirects to https", async () => {
 	const res = await exports.default.fetch("http://trust.fannarmaximus.com/s/abc?x=1", { redirect: "manual" });
@@ -56,20 +56,3 @@ it.each(["/s/abc", "/s/abc/", "/s/abc.", "/s/", "/s/a/b"])("%s is a session path
 	expect(isSessionPath(p)).toBe(true));
 it.each(["/", "/sx", "/new", "/api/sessions/abc"])("%s is not a session path", (p) =>
 	expect(isSessionPath(p)).toBe(false));
-
-it.each(["/t/abc", "/t/abc/", "/t/"])("%s is a team path", (p) => expect(isTeamPath(p)).toBe(true));
-it.each(["/team", "/t", "/s/abc"])("%s is not a team path", (p) => expect(isTeamPath(p)).toBe(false));
-
-import { createTeam, findTeamByToken, submitTeamScore, markRevealed } from "../src/teamstore.js";
-
-it("scheduled run anonymises expired revealed teams", async () => {
-	const old = Date.now() - SESSION_TTL_MS - 1;
-	const t = await createTeam(env.DB, { teamName: "Old", creatorName: "A", members: ["B", "C"], creatorIpHash: "h", now: old });
-	const { members } = await findTeamByToken(env.DB, t.creatorToken, old);
-	for (const m of members) await submitTeamScore(env.DB, m.id, { given: { c: 5, r: 5, i: 5, s: 5 } }, old + 1);
-	await markRevealed(env.DB, t.id, old + 2);
-	const before = (await env.DB.prepare("SELECT COUNT(*) AS n FROM team_stats").first()).n;
-	await exports.default.scheduled({ scheduledTime: Date.now(), cron: "0 * * * *" }, env, { waitUntil() {} });
-	expect(await findTeamByToken(env.DB, t.creatorToken, 0)).toBeNull();
-	expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM team_stats").first()).n).toBe(before + 3);
-});

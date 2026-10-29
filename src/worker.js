@@ -2,9 +2,7 @@
 // rewrites /s/<token> to the session page so one HTML file handles every state.
 
 import { handleApi } from "./api.js";
-import { handleTeamApi } from "./teamapi.js";
 import { anonymiseExpired, clearOldIpHashes } from "./store.js";
-import { anonymiseExpiredTeams } from "./teamstore.js";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const SECURITY_HEADERS = {
@@ -21,10 +19,6 @@ export function isSessionPath(pathname) {
 	return pathname.startsWith("/s/");
 }
 
-export function isTeamPath(pathname) {
-	return pathname.startsWith("/t/");
-}
-
 function secure(res) {
 	const out = new Response(res.body, res);
 	for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
@@ -38,14 +32,8 @@ export default {
 			url.protocol = "https:";
 			return Response.redirect(url.toString(), 301);
 		}
-		if (url.pathname.startsWith("/api/teams")) {
-			return secure(await handleTeamApi(request, env));
-		}
 		if (url.pathname.startsWith("/api/")) {
 			return secure(await handleApi(request, env));
-		}
-		if (isTeamPath(url.pathname)) {
-			return secure(await env.ASSETS.fetch(new Request(new URL("/teampage", request.url), request)));
 		}
 		if (isSessionPath(url.pathname)) {
 			return secure(await env.ASSETS.fetch(new Request(new URL("/session", request.url), request)));
@@ -57,7 +45,6 @@ export default {
 	async scheduled(controller, env) {
 		const now = Date.now();
 		await anonymiseExpired(env.DB, now);
-		await anonymiseExpiredTeams(env.DB, now);
 		await clearOldIpHashes(env.DB, now - 24 * 60 * 60 * 1000);
 	},
 };
