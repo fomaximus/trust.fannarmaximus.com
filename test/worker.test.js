@@ -59,3 +59,17 @@ it.each(["/", "/sx", "/new", "/api/sessions/abc"])("%s is not a session path", (
 
 it.each(["/t/abc", "/t/abc/", "/t/"])("%s is a team path", (p) => expect(isTeamPath(p)).toBe(true));
 it.each(["/team", "/t", "/s/abc"])("%s is not a team path", (p) => expect(isTeamPath(p)).toBe(false));
+
+import { createTeam, findTeamByToken, submitTeamScore, markRevealed } from "../src/teamstore.js";
+
+it("scheduled run anonymises expired revealed teams", async () => {
+	const old = Date.now() - SESSION_TTL_MS - 1;
+	const t = await createTeam(env.DB, { teamName: "Old", creatorName: "A", members: ["B", "C"], creatorIpHash: "h", now: old });
+	const { members } = await findTeamByToken(env.DB, t.creatorToken, old);
+	for (const m of members) await submitTeamScore(env.DB, m.id, { given: { c: 5, r: 5, i: 5, s: 5 } }, old + 1);
+	await markRevealed(env.DB, t.id, old + 2);
+	const before = (await env.DB.prepare("SELECT COUNT(*) AS n FROM team_stats").first()).n;
+	await exports.default.scheduled({ scheduledTime: Date.now(), cron: "0 * * * *" }, env, { waitUntil() {} });
+	expect(await findTeamByToken(env.DB, t.creatorToken, 0)).toBeNull();
+	expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM team_stats").first()).n).toBe(before + 3);
+});

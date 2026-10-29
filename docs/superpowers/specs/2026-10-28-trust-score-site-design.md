@@ -1,7 +1,7 @@
 # trust.fannarmaximus.com — design
 
 Date: 2026-10-28
-Status: approved by owner 2026-10-28
+Status: approved by owner 2026-10-28; team mode added, see `2026-10-28-team-sessions-design.md`
 
 ## Intent
 
