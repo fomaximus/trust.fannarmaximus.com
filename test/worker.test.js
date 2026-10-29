@@ -59,3 +59,19 @@ it.each(["/", "/sx", "/new", "/api/sessions/abc"])("%s is not a session path", (
 
 it.each(["/m/abc", "/m/abc/", "/m/"])("%s is a match path", (p) => expect(isMatchPath(p)).toBe(true));
 it.each(["/match", "/m", "/s/abc"])("%s is not a match path", (p) => expect(isMatchPath(p)).toBe(false));
+
+import { createMatch, findByToken as findMatch, setupSideB, submitMatchScore, markRevealed as markMatchRevealed } from "../src/matchstore.js";
+
+it("scheduled run anonymises expired revealed matches", async () => {
+	const old = Date.now() - SESSION_TTL_MS - 1;
+	const mt = await createMatch(env.DB, { myTeam: "A", otherTeam: "B", creatorName: "a1", members: ["a2", "a3"], creatorIpHash: "h", now: old });
+	await setupSideB(env.DB, mt.id, mt.bCaptainToken, { captainName: "b1", members: ["b2", "b3"] });
+	const { sides } = await findMatch(env.DB, mt.creatorToken, old);
+	const sc = { given: { c: 5, r: 5, i: 5, s: 5 }, predicted: { c: 5, r: 5, i: 5, s: 5 } };
+	for (const m of [...sides.a.members, ...sides.b.members]) await submitMatchScore(env.DB, m.id, sc, old + 1);
+	await markMatchRevealed(env.DB, mt.id, old + 2);
+	const before = (await env.DB.prepare("SELECT COUNT(*) AS n FROM match_stats").first()).n;
+	await exports.default.scheduled({ scheduledTime: Date.now(), cron: "0 * * * *" }, env, { waitUntil() {} });
+	expect(await findMatch(env.DB, mt.creatorToken, 0)).toBeNull();
+	expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM match_stats").first()).n).toBe(before + 6);
+});

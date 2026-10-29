@@ -1,7 +1,7 @@
 # Team sessions — design
 
 Date: 2026-10-28
-Status: approved by owner 2026-10-28
+Status: SUPERSEDED 2026-10-29 by `2026-10-29-two-teams-design.md`; the one-team mode was built, reverted from production and removed
 Builds on: `2026-10-28-trust-score-site-design.md` (the pair flow, live)
 
 ## Intent

@@ -4,6 +4,7 @@
 import { handleApi } from "./api.js";
 import { handleMatchApi } from "./matchapi.js";
 import { anonymiseExpired, clearOldIpHashes } from "./store.js";
+import { anonymiseExpiredMatches } from "./matchstore.js";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const SECURITY_HEADERS = {
@@ -56,6 +57,7 @@ export default {
 	async scheduled(controller, env) {
 		const now = Date.now();
 		await anonymiseExpired(env.DB, now);
+		await anonymiseExpiredMatches(env.DB, now);
 		await clearOldIpHashes(env.DB, now - 24 * 60 * 60 * 1000);
 	},
 };
